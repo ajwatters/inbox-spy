@@ -1,0 +1,19 @@
+{
+  "gmail_account": "",
+  "gmail_address": "",
+  "timezone": "",
+  "schedule": {
+    "day": "Sun",
+    "time": "09:00",
+    "scheduled_task_id": "inbox-spy-weekly"
+  },
+  "figma": {
+    "team": "",
+    "plan_key": ""
+  },
+  "tools": {
+    "composio": "mcp__claude_ai_Composio",
+    "figma": "mcp__claude_ai_Figma"
+  },
+  "brands": []
+}

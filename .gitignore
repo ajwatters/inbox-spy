@@ -1,0 +1,8 @@
+inbox-spy.zip
+/*.html
+.DS_Store
+__pycache__/
+inbox-spy/data/*
+!inbox-spy/data/.gitkeep
+inbox-spy/logs/
+inbox-spy/app/data.js

@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon.png">
+<title>Inbox Spy by Walden</title>
+<style>
+:root{
+  --g9:#16271e;--g8:#1d3328;--g7:#27543c;--g6:#2f6f4e;--g5:#3f8a63;--g3:#b9c9c0;--g2:#d8e4dd;--g1:#eef3f0;--g0:#f6f9f7;
+  --ink:#14201a;--muted:#5d6f65;--line:#dbe5df;
+  --canvas:#1e1e1e;--canvas2:#2a2a2a;--camp:#72d38f;--campInk:#0f3b1f;--flow:#a9b8ff;--flowInk:#1d2660;
+  --serif:Georgia,'Times New Roman',serif;--sans:'Helvetica Neue',Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--g0);color:var(--ink);font:14px/1.45 var(--sans)}
+button,input,select{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:248px 1fr;height:100vh}
+aside{background:var(--g9);color:#e7efe9;display:flex;flex-direction:column;padding:22px 16px}
+.logo{display:flex;flex-direction:column;align-items:center;gap:10px;padding:0 6px 22px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo img{display:block;width:100%;max-width:200px;height:auto;background:#fff;border-radius:12px;padding:6px 10px;box-sizing:border-box}
+.mark{width:34px;height:34px;border-radius:9px;background:var(--g6);display:grid;place-items:center;font:700 19px var(--serif);color:#fff}
+.logo b{font:600 18px var(--serif);letter-spacing:.2px;display:block}
+.logo small{font-size:10.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--g3)}
+.side-h{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:#8fa79a;margin:22px 8px 8px}
+.brand-btn{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 10px;border-radius:9px;border:0;background:transparent;cursor:pointer;text-align:left}
+.brand-btn.on{background:rgba(255,255,255,.08)}
+.brand-btn:hover{background:rgba(255,255,255,.06)}
+.brand-btn .dot{width:8px;height:8px;border-radius:50%;background:#63d38c;box-shadow:0 0 0 3px rgba(99,211,140,.18);margin-right:9px;flex:none}
+.brand-btn span.n{font-size:12px;color:#9fb6a9;background:rgba(255,255,255,.07);padding:1px 7px;border-radius:20px}
+.add{margin-top:6px;border:1px dashed rgba(255,255,255,.18);color:#a9bfb2;background:none;border-radius:9px;padding:9px;cursor:pointer;width:100%}
+.add:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+.sidefoot{margin-top:auto;font-size:12px;color:#8fa79a;padding:14px 8px 0;border-top:1px solid rgba(255,255,255,.08)}
+.sidefoot .row{display:flex;justify-content:space-between;margin:5px 0}
+.sidefoot b{color:#e7efe9;font-weight:500}
+main{overflow:auto;display:flex;flex-direction:column;min-width:0}
+.cta{display:block;text-align:center;padding:14px 28px;background:#fff;border-bottom:1px solid var(--line);color:#000;font:900 17px/1.35 var(--sans);text-decoration:none}
+.cta b{color:#e00000;font-weight:900;text-decoration:underline;text-underline-offset:3px}
+.top{display:flex;align-items:center;gap:14px;padding:18px 28px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.top h1{font:400 26px var(--serif);margin:0;letter-spacing:-.2px}
+.top .sub{color:var(--muted);font-size:13px}
+.grow{flex:1}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--g0);border-radius:30px;padding:7px 13px;font-size:13px;cursor:pointer}
+.pill:hover{border-color:var(--g3)}
+.pill .live{width:7px;height:7px;border-radius:50%;background:var(--g5);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,138,99,.5)}70%{box-shadow:0 0 0 7px rgba(63,138,99,0)}100%{box-shadow:0 0 0 0 rgba(63,138,99,0)}}
+.btn{border:0;background:var(--g6);color:#fff;border-radius:9px;padding:9px 15px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--g7)}
+.btn.ghost{background:#fff;color:var(--g7);border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:20px 28px 6px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat .k{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.stat .v{font:400 28px var(--serif);margin-top:4px;color:var(--g8)}
+.stat .s{font-size:12px;color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 28px}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:7px;cursor:pointer;color:var(--muted);font-weight:500}
+.seg button.on{background:var(--g6);color:#fff}
+.ctl{background:#fff;border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+input.ctl[type=search]{width:220px}
+.months{display:flex;gap:6px;flex-wrap:wrap;padding:0 28px 14px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:5px 12px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.chip.on{background:var(--g8);color:#fff;border-color:var(--g8)}
+.chip b{font-weight:600;margin-left:4px;opacity:.7}
+/* board = client Figma format */
+.board{background:var(--canvas);margin:0 28px 28px;border-radius:14px;padding:26px;min-height:300px}
+.month{background:var(--canvas2);border-radius:4px;margin-bottom:34px}
+.month:last-child{margin-bottom:0}
+.mh{background:#6aa84f;color:#fff;font:700 21px var(--sans);padding:14px 18px;display:flex;align-items:center;gap:12px}
+.mh small{font-weight:500;font-size:13px;opacity:.9;background:rgba(0,0,0,.15);padding:3px 9px;border-radius:20px}
+.cols{display:flex;gap:18px;overflow-x:auto;padding:18px;align-items:flex-start}
+.col{width:216px;flex:none;cursor:pointer;transition:transform .15s}
+.col:hover{transform:translateY(-3px)}
+.card{background:var(--camp);color:var(--campInk);font-size:11.5px;line-height:1.35;padding:7px 9px;margin-bottom:4px}
+.card b{font-weight:700}
+.col.flow .card{background:var(--flow);color:var(--flowInk)}
+.tag{display:inline-block;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;font-weight:700;padding:1px 6px;border-radius:3px;background:rgba(0,0,0,.12);margin-bottom:3px}
+.shot{background:#fff;margin-top:6px;max-height:640px;overflow:hidden;position:relative}
+.shot img{width:100%;display:block}
+.shot:after{content:"";position:absolute;inset:auto 0 0 0;height:60px;background:linear-gradient(transparent,var(--canvas2))}
+.empty{color:#aaa;text-align:center;padding:60px 20px}
+.empty b{display:block;color:#fff;font:400 22px var(--serif);margin-bottom:6px}
+/* table */
+.tablewrap{margin:0 28px 28px;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{position:sticky;top:0;background:var(--g1);text-align:left;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:10px 12px;cursor:pointer;white-space:nowrap}
+td{border-top:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:hover td{background:var(--g0);cursor:pointer}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.badge.campaign{background:#dcf5e4;color:#1d6b3a}.badge.flow{background:#e4e8ff;color:#2f3b8f}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(10,20,14,.6);display:none;z-index:20;padding:30px}
+.modal.on{display:flex;justify-content:center}
+.sheet{background:#fff;border-radius:16px;display:grid;grid-template-columns:620px 360px;max-height:100%;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.sheet .l{overflow-y:auto;overflow-x:hidden;background:#f0f0f0;padding:10px}
+.sheet .l img{width:600px;display:block;margin:0 auto}
+.sheet .r{padding:24px;overflow:auto}
+.sheet h2{font:400 23px var(--serif);margin:6px 0 4px}
+.kv{margin:16px 0}
+.kv div{display:grid;grid-template-columns:110px 1fr;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.kv span{color:var(--muted)}
+.kv a{color:var(--g6);word-break:break-all}
+.x{float:right;border:0;background:var(--g1);border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px}
+/* schedule dialog + toast */
+.dlg{position:fixed;inset:0;background:rgba(10,20,14,.5);display:none;place-items:center;z-index:30}
+.dlg.on{display:grid}
+.dlg .box{background:#fff;border-radius:16px;padding:24px;width:420px}
+.dlg h3{font:400 22px var(--serif);margin:0 0 4px}
+.dlg p{color:var(--muted);margin:0 0 16px;font-size:13px}
+.dlg .row{display:flex;gap:10px;margin-bottom:16px}
+.dlg select,.dlg input{flex:1}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--g9);color:#fff;padding:12px 18px;border-radius:10px;opacity:0;transition:.25s;z-index:40;font-size:13px;max-width:560px}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.sync{position:fixed;inset:0;background:rgba(10,20,14,.55);display:none;place-items:center;z-index:35}
+.sync.on{display:grid}
+.sync .box{background:#fff;border-radius:16px;padding:26px 28px;width:440px}
+.sync li{list-style:none;padding:7px 0;color:var(--muted);display:flex;gap:10px;align-items:center}
+.sync li.done{color:var(--ink)}
+.sync li i{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex:none}
+.sync li.done i{background:var(--g6);border-color:var(--g6)}
+.sync li.run i{border-color:var(--g6);border-top-color:transparent;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#brandSel{display:none;margin-bottom:8px;max-width:100%}
+@media (max-width:1100px){.app{grid-template-columns:1fr}aside{display:none}.sheet{grid-template-columns:1fr}#brandSel{display:block}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="logo"><img src="walden-logo.jpg" alt="Walden"><small>Inbox Spy</small></div>
+    <div class="side-h">Tracked brands</div>
+    <div id="brands"></div>
+    <button class="add" id="addBrand">+ Track a competitor</button>
+    <div class="sidefoot">
+      <div class="row"><span>Inbox</span><b id="inbox"></b></div>
+      <div class="row"><span>Last sync</span><b id="lastSync"></b></div>
+      <div class="row"><span>Auto-sync</span><b id="schedSide"></b></div>
+    </div>
+  </aside>
+  <main>
+    <a class="cta" href="https://links.waldenretention.com/widget/bookings/live-email-audit" target="_blank" rel="noopener"><b>👉 Book a free 36-point email audit 👈</b></a>
+    <div class="top">
+      <div><select class="ctl" id="brandSel" aria-label="Brand"></select><h1 id="bName"></h1><div class="sub" id="bSub"></div></div>
+      <div class="grow"></div>
+      <button class="pill" id="schedPill"><i class="live"></i><span id="schedText"></span></button>
+      <a class="btn ghost" id="figmaBtn" target="_blank" rel="noopener" style="text-decoration:none;display:none">Open in Figma</a>
+      <button class="btn ghost" id="boardBtn" style="display:none">Create Figma board</button>
+      <button class="btn" id="syncBtn">Sync now</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="controls">
+      <div class="seg" id="view"><button data-v="board" class="on">Board</button><button data-v="table">Table</button></div>
+      <div class="seg" id="type"><button data-t="all" class="on">All</button><button data-t="campaign">Campaigns</button><button data-t="flow">Flows</button></div>
+      <select class="ctl" id="period">
+        <option value="all">All time</option>
+        <option value="30">Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="bfcm-this">BFCM this year</option>
+        <option value="bfcm-last">BFCM last year</option>
+        <option value="xmas-last">Christmas last year</option>
+        <option value="custom">Custom range…</option>
+      </select>
+      <span id="customRange" style="display:none"><input class="ctl" type="date" id="from"> → <input class="ctl" type="date" id="to"></span>
+      <div class="grow"></div>
+      <input class="ctl" type="search" id="q" placeholder="Search subject, preview, sender">
+    </div>
+    <div class="months" id="months"></div>
+    <div id="out"></div>
+  </main>
+</div>
+
+<div class="modal" id="modal"><div class="sheet"><div class="l"><img id="mImg" alt=""></div><div class="r" id="mBody"></div></div></div>
+<div class="dlg" id="dlg"><div class="box">
+  <h3>Auto-sync schedule</h3>
+  <p>Inbox Spy checks the inbox on this schedule and adds every new email it finds. Change it here, then paste the instruction into Claude to apply it.</p>
+  <div class="row">
+    <select class="ctl" id="sDay"><option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option><option>Sun</option></select>
+    <input class="ctl" type="time" id="sTime">
+  </div>
+  <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn ghost" id="sCancel">Cancel</button><button class="btn" id="sSave">Copy instruction</button></div>
+</div></div>
+<div class="sync" id="sync"><div class="box">
+  <h3 style="font:400 22px Georgia,serif;margin:0 0 6px"><span id="syncVerb">Sync</span> <span id="syncBrand"></span></h3>
+  <p style="color:#5d6f65;margin:0;font-size:13px" id="syncMsg"></p>
+  <ul style="padding:0;margin:10px 0 0" id="syncSteps"></ul>
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button class="btn ghost" id="syncClose">Close</button><button class="btn" id="syncReload" style="display:none">Show new emails</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>document.write('<script src="data.js?v=' + Date.now() + '"><\/script>');</script>
+<script>
+const D = window.SPY || {brands:[],schedule:{day:'Sun',time:'09:00'}};
+const $ = s => document.querySelector(s);
+const DAYS = {Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6,Sun:0};
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const st = {brand:0, view:'board', type:'all', period:'all', month:null, q:'', from:null, to:null, sort:'sent_local', dir:-1};
+let sched = Object.assign({}, D.schedule);
+try { const s = JSON.parse(localStorage.getItem('spy.sched')||'null'); if (s) sched = s; } catch(e){}
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mask = e => e ? e.replace(/^(.{3}).*(@.*)$/, '$1•••$2') : '';
+const fmtDate = s => { const d = new Date(s.replace(' ','T')); return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}); };
+const ord = n => n + (['th','st','nd','rd'][(n%100-20)%10] || ['th','st','nd','rd'][n%100] || 'th');
+const brand = () => D.brands[st.brand] || {emails:[],name:'No brands yet'};
+
+function nextRun(){
+  const [h,m] = sched.time.split(':').map(Number); const now = new Date(); const d = new Date(now);
+  d.setHours(h,m,0,0); let add = (DAYS[sched.day] - now.getDay() + 7) % 7; if (add === 0 && d <= now) add = 7; d.setDate(d.getDate()+add); return d;
+}
+function rel(d){ const days = Math.round((d - new Date())/864e5); return days <= 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`; }
+function longDay(d){ return {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday',Sun:'Sunday'}[d]; }
+
+function periodRange(){
+  const now = new Date(), y = now.getFullYear(), iso = d => d.toISOString().slice(0,10);
+  switch (st.period) {
+    case '30': return [iso(new Date(now - 30*864e5)), iso(now)];
+    case '90': return [iso(new Date(now - 90*864e5)), iso(now)];
+    case 'bfcm-this': return [`${y}-11-01`, `${y}-12-02`];
+    case 'bfcm-last': return [`${y-1}-11-01`, `${y-1}-12-02`];
+    case 'xmas-last': return [`${y-1}-12-01`, `${y-1}-12-31`];
+    case 'custom': return [st.from || '0000', st.to || '9999'];
+    default: return null;
+  }
+}
+function filtered(ignoreMonth){
+  const r = periodRange(), q = st.q.toLowerCase();
+  return brand().emails.filter(e =>
+    (st.type === 'all' || e.type === st.type) &&
+    (!r || (e.sent_local.slice(0,10) >= r[0] && e.sent_local.slice(0,10) <= r[1])) &&
+    (ignoreMonth || !st.month || e.month === st.month) &&
+    (!q || (e.subject+' '+e.preview+' '+e.sender_name).toLowerCase().includes(q)));
+}
+
+function renderSide(){
+  $('#brands').innerHTML = D.brands.map((b,i) => `<button class="brand-btn ${i===st.brand?'on':''}" data-i="${i}"><span style="display:flex;align-items:center"><i class="dot"></i>${esc(b.name)}</span><span class="n">${b.emails.length}</span></button>`).join('');
+  $('#brands').querySelectorAll('button').forEach(b => b.onclick = () => { st.brand = +b.dataset.i; st.month = null; render(); });
+  $('#brandSel').innerHTML = D.brands.map((b,i) => `<option value="${i}" ${i===st.brand?'selected':''}>${esc(b.name)} (${b.emails.length})</option>`).join('');
+  $('#brandSel').onchange = e => { st.brand = +e.target.value; st.month = null; render(); };
+  $('#inbox').textContent = mask(D.inbox);
+  $('#lastSync').textContent = D.generated ? new Date(D.generated).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ', ' + new Date(D.generated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  $('#schedSide').textContent = `${sched.day} ${sched.time}`;
+  $('#schedText').textContent = `Auto-sync every ${longDay(sched.day)} at ${sched.time} · next ${rel(nextRun())}`;
+}
+
+function renderStats(list){
+  const all = brand().emails, n = list.length;
+  const camp = list.filter(e=>e.type==='campaign').length;
+  const span = n ? Math.max(1,(new Date(list[0].sent_local.replace(' ','T')) - new Date(list[n-1].sent_local.replace(' ','T')))/(7*864e5)) : 1;
+  const txt = list.filter(e=>e.format!=='Designed').length;
+  const first = all.length ? all[all.length-1].sent_local.slice(0,10) : null;
+  $('#bName').textContent = brand().name;
+  const fb = $('#figmaBtn'); fb.style.display = brand().figma_file ? 'inline-block' : 'none'; if (brand().figma_file) fb.href = brand().figma_file;
+  const bb = $('#boardBtn'), noShots = !brand().emails.length;
+  bb.style.display = brand().figma_file ? 'none' : 'inline-block';
+  bb.title = noShots ? 'No emails captured yet, so there is nothing to put on a board' : 'Build a Figma board of every email in your Figma team';
+  $('#bSub').textContent = first ? `On their list since ${fmtDate(first)} · ${all.length} emails captured · ${brand().from || ''}` : 'No emails captured yet';
+  const cards = [
+    ['Emails', n, st.period==='all' && !st.month ? 'in view' : 'in this window'],
+    ['Campaigns', camp, `${(camp/span).toFixed(1)} per week`],
+    ['Text-based', n ? Math.round(txt/n*100)+'%' : '—', 'plain + branded text'],
+  ];
+  $('#stats').innerHTML = cards.map(c => `<div class="stat"><div class="k">${c[0]}</div><div class="v">${c[1]}</div><div class="s">${c[2]}</div></div>`).join('');
+}
+
+function renderMonths(){
+  const counts = {}; filtered(true).forEach(e => counts[e.month]=(counts[e.month]||0)+1);
+  const ms = Object.keys(counts).sort().reverse();
+  $('#months').innerHTML = `<button class="chip ${!st.month?'on':''}" data-m="">All months</button>` + ms.map(m => `<button class="chip ${st.month===m?'on':''}" data-m="${m}">${MONTHS[+m.slice(5)-1]} ${m.slice(0,4)}<b>${counts[m]}</b></button>`).join('');
+  $('#months').querySelectorAll('.chip').forEach(c => c.onclick = () => { st.month = c.dataset.m || null; render(); });
+}
+
+function cardsFor(e){
+  const d = new Date(e.sent_local.replace(' ','T'));
+  const date = `${d.toLocaleDateString('en-GB',{weekday:'long'})} ${ord(d.getDate())} ${MONTHS[d.getMonth()]}`;
+  const label = e.type === 'flow' ? `<span class="tag">Flow · ${esc(e.flow_name)} #${e.flow_step}</span>` : `<span class="tag">Campaign</span>`;
+  return `<div class="card">${label}<br><b>Send Date:</b> ${date}<br><b>Send Time:</b> ${e.time}</div>
+          <div class="card"><b>Subject Line:</b> ${esc(e.subject)}<br><b>Preview Text:</b> ${esc(e.preview)}<br><b>Sender Name:</b> ${esc(e.sender_name)}</div>`;
+}
+
+function renderBoard(list){
+  if (!list.length) return emptyState();
+  const by = {}; list.forEach(e => (by[e.month] = by[e.month] || []).push(e));
+  return `<div class="board">` + Object.keys(by).sort().reverse().map(m => {
+    const items = by[m].slice().sort((a,b)=>a.sent_utc.localeCompare(b.sent_utc));
+    const c = items.filter(e=>e.type==='campaign').length, f = items.length - c;
+    return `<section class="month"><div class="mh">${MONTHS[+m.slice(5)-1]} ${m.slice(0,4)} Emails 📩 <small>${c} campaigns</small>${f?`<small>${f} flow</small>`:''}</div>
+      <div class="cols">${items.map(e => `<div class="col ${e.type}" data-id="${e.id}">${cardsFor(e)}${e.shot?`<div class="shot"><img loading="lazy" src="${e.shot}" alt=""></div>`:''}</div>`).join('')}</div></section>`;
+  }).join('') + `</div>`;
+}
+
+function renderTable(list){
+  if (!list.length) return emptyState();
+  const cols = [['sent_local','Sent'],['type','Type'],['sender_name','Sender'],['subject','Subject line'],['preview','Preview text'],['format','Format'],['detected_via','Detected via']];
+  const rows = list.slice().sort((a,b) => String(a[st.sort]).localeCompare(String(b[st.sort])) * st.dir);
+  return `<div class="tablewrap"><table><thead><tr>${cols.map(c=>`<th data-s="${c[0]}">${c[1]}${st.sort===c[0]?(st.dir>0?' ↑':' ↓'):''}</th>`).join('')}</tr></thead><tbody>` +
+    rows.map(e => `<tr data-id="${e.id}"><td style="white-space:nowrap">${fmtDate(e.sent_local)}<br><span style="color:var(--muted)">${e.time}</span></td><td><span class="badge ${e.type}">${e.type==='flow'?'Flow':'Campaign'}</span>${e.type==='flow'?`<br><span style="color:var(--muted);font-size:12px">${esc(e.flow_name)} #${e.flow_step}</span>`:''}</td><td>${esc(e.sender_name)}</td><td><b>${esc(e.subject)}</b></td><td style="color:var(--muted)">${esc(e.preview)}</td><td>${e.format}</td><td style="color:var(--muted)">${e.detected_via}</td></tr>`).join('') + `</tbody></table></div>`;
+}
+
+
+function emptyState(){
+  const all = brand().emails, first = all.length ? fmtDate(all[all.length-1].sent_local) : null;
+  return `<div class="board"><div class="empty"><b>No emails in this window</b>${first ? `This inbox joined ${esc(brand().name)}'s list on ${first}. Anything sent before then wasn't received, so it can't be pulled.` : 'Run a sync to start capturing emails.'}</div></div>`;
+}
+
+function render(){
+  renderSide(); renderMonths();
+  const list = filtered(false);
+  renderStats(list);
+  $('#out').innerHTML = st.view === 'board' ? renderBoard(list) : renderTable(list);
+  $('#out').querySelectorAll('[data-id]').forEach(el => el.onclick = () => open(el.dataset.id));
+  $('#out').querySelectorAll('th[data-s]').forEach(th => th.onclick = () => { st.dir = st.sort===th.dataset.s ? -st.dir : 1; st.sort = th.dataset.s; render(); });
+}
+
+function open(id){
+  const e = brand().emails.find(x => x.id === id); if (!e) return;
+  $('#mImg').src = e.shot || '';
+  const utm = Object.entries(e.utm||{}).map(([k,v])=>`${k}=${esc(v)}`).join('<br>') || '<span>None on links</span>';
+  $('#mBody').innerHTML = `<button class="x" onclick="document.getElementById('modal').classList.remove('on')">✕</button>
+    <span class="badge ${e.type}">${e.type==='flow'?`Flow · ${esc(e.flow_name)} #${e.flow_step}`:'Campaign'}</span>
+    <h2>${esc(e.subject)}</h2><div style="color:var(--muted)">${esc(e.preview)}</div>
+    <div class="kv">
+      <div><span>Sent</span>${fmtDate(e.sent_local)} at ${e.time}</div>
+      <div><span>Sender</span>${esc(e.sender_name)}<br><span style="color:var(--muted)">${esc(e.sender_email)}</span></div>
+      <div><span>Format</span>${e.format} · ${e.words} words</div>
+      <div><span>Offer</span>${e.has_offer?'Yes':'No'}</div>
+      <div><span>Landing page</span>${e.landing?`<a href="${esc(e.landing)}" target="_blank" rel="noopener">${esc(e.landing.replace(/^https?:\/\//,''))}</a>`:'—'}</div>
+      <div><span>UTM</span>${utm}</div>
+      <div><span>Detected via</span>${e.detected_via}</div>
+    </div>
+    <a class="btn" style="text-decoration:none;display:inline-block" href="${e.gmail_url}" target="_blank" rel="noopener">Open in Gmail</a>`;
+  $('#modal').classList.add('on');
+}
+$('#modal').onclick = ev => { if (ev.target.id === 'modal') $('#modal').classList.remove('on'); };
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') ['modal','dlg'].forEach(i=>$('#'+i).classList.remove('on')); });
+
+function toast(t){ const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('on'), 3800); }
+async function copy(t){ try { await navigator.clipboard.writeText(t); return true; } catch(e){ return false; } }
+
+$('#view').onclick = ev => { const b = ev.target.closest('button'); if (!b) return; st.view = b.dataset.v; $('#view').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); render(); };
+$('#type').onclick = ev => { const b = ev.target.closest('button'); if (!b) return; st.type = b.dataset.t; $('#type').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); render(); };
+$('#period').onchange = ev => { st.period = ev.target.value; st.month = null; $('#customRange').style.display = st.period==='custom'?'inline':'none'; render(); };
+$('#from').onchange = ev => { st.from = ev.target.value; render(); };
+$('#to').onchange = ev => { st.to = ev.target.value; render(); };
+$('#q').oninput = ev => { st.q = ev.target.value; render(); };
+
+$('#schedPill').onclick = () => { $('#sDay').value = sched.day; $('#sTime').value = sched.time; $('#dlg').classList.add('on'); };
+$('#sCancel').onclick = () => $('#dlg').classList.remove('on');
+$('#sSave').onclick = async () => {
+  sched = {...sched, day: $('#sDay').value, time: $('#sTime').value};
+  try { localStorage.setItem('spy.sched', JSON.stringify(sched)); } catch(e){}
+  const ok = await copy(`/inbox-spy schedule ${sched.day} ${sched.time}`);
+  $('#dlg').classList.remove('on'); render();
+  toast(ok ? `Copied. Paste into Claude to move auto-sync to ${longDay(sched.day)} ${sched.time}.` : `Tell Claude: "/inbox-spy schedule ${sched.day} ${sched.time}"`);
+};
+$('#addBrand').onclick = async () => { const ok = await copy('/inbox-spy add <brand name> <sender domain>'); toast(ok ? 'Copied. Paste into Claude with the brand name and sender domain.' : 'Tell Claude: /inbox-spy add <brand> <domain>'); };
+
+// Sync now / Create Figma board: ask the local server (scripts/server.py) to run Claude, then poll until it finishes.
+let poll = null;
+const brandName = slug => (D.brands.find(x => x.slug === slug) || {}).name || 'every brand';
+const JOBS = {
+  sync: {verb:'Sync', busy:'Syncing…', took:'2–5 minutes', doing:'checking the burner inbox and adding anything new', done:'Done. Here is what Claude found:', fail:'The sync did not finish:', reload:'Show new emails'},
+  figma: {verb:'Figma board for', busy:'Building board…', took:'5–15 minutes, longer for brands with lots of emails', doing:'building the Figma board, one month and email at a time', done:'Board created. Use Open in Figma to see it.', fail:'The board was not finished:', reload:'Show Open in Figma'},
+};
+function syncUI(s){
+  const j = JOBS[s.action] || JOBS.sync, busy = !!s.running;
+  $('#syncBtn').disabled = busy; $('#boardBtn').disabled = busy;
+  $('#syncBtn').textContent = busy && j === JOBS.sync ? j.busy : 'Sync now';
+  $('#boardBtn').textContent = busy && j === JOBS.figma ? j.busy : 'Create Figma board';
+  $('#syncVerb').textContent = j.verb; $('#syncBrand').textContent = brandName(s.slug);
+  const mins = s.started ? Math.max(0, Math.floor((Date.now() - new Date(s.started)) / 60000)) : 0;
+  $('#syncMsg').textContent = s.running
+    ? `Claude is ${j.doing}. This usually takes ${j.took} (${mins} min so far). You can close this box; the buttons stay busy until it's done.`
+    : s.ok ? j.done : j.fail;
+  $('#syncSteps').innerHTML = s.running ? `<li class="run"><i></i>${j.busy}</li>`
+    : `<pre style="white-space:pre-wrap;font:13px/1.5 var(--sans);max-height:300px;overflow:auto;margin:0;color:var(--ink)">${esc(s.report || (s.ok ? 'No report.' : 'No details. Check the logs folder.'))}</pre>`;
+  $('#syncReload').textContent = j.reload;
+  $('#syncReload').style.display = s.running ? 'none' : '';
+}
+async function syncStatus(){
+  try { const r = await fetch('/api/sync', {cache:'no-store'}); return r.ok ? await r.json() : null; } catch(e){ return null; }
+}
+function watchSync(){
+  clearInterval(poll);
+  poll = setInterval(async () => {
+    const s = await syncStatus(); if (!s) return;
+    syncUI(s);
+    if (!s.running){ clearInterval(poll); $('#sync').classList.add('on'); }
+  }, 4000);
+}
+async function startJob(action){
+  const b = brand(), cmd = action === 'figma' ? `/inbox-spy figma ${b.slug}` : `/inbox-spy sync ${b.slug||''}`.trim();
+  let r = null;
+  try { r = await fetch('/api/sync', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({slug: b.slug || '', action})}); } catch(e){}
+  if (!r || r.status === 404 || r.status === 405 || r.status === 501){
+    const ok = await copy(cmd);
+    return toast(ok ? 'This page was opened without the Inbox Spy server, so the command was copied. Paste it into Claude.' : `Tell Claude: "${cmd}"`);
+  }
+  const s = await r.json().catch(() => ({}));
+  if (r.status === 409){ toast(`Claude is still working on ${brandName(s.slug)}. Try again when it's done.`); syncUI(s); $('#sync').classList.add('on'); return watchSync(); }
+  if (!r.ok) return toast(`Could not start: ${s.error || r.status}`);
+  syncUI(s); $('#sync').classList.add('on'); watchSync();
+}
+$('#syncBtn').onclick = () => startJob('sync');
+$('#boardBtn').onclick = () => {
+  if (!brand().emails.length) return toast(`${brand().name} has no emails yet, so there is nothing to put on a board. Sync first.`);
+  startJob('figma');
+};
+$('#syncClose').onclick = () => $('#sync').classList.remove('on');
+$('#syncReload').onclick = () => { location.hash = brand().slug || ''; location.reload(); };
+
+const fromHash = D.brands.findIndex(b => b.slug === decodeURIComponent(location.hash.slice(1)));
+if (fromHash >= 0) st.brand = fromHash;
+render();
+syncStatus().then(s => { if (s && s.running){ syncUI(s); watchSync(); } });
+</script>
+</body>
+</html>
